@@ -12,9 +12,12 @@ app.get('/', async (req, res) => {
         lastWeek.setDate(lastWeek.getDate() - 7);
         const dateStr = lastWeek.toISOString().split('T')[0];
 
-        const query = `("${ARTISTS.join('" OR "')}")`;
+        // This NEW query adds "AND" logic to ensure the news is about MUSIC
+        const artistQuery = `("${ARTISTS.join('" OR "')}")`;
+        const musicKeywords = `AND (music OR rock OR concert OR album OR tour OR song OR "rock and roll")`;
+        const finalQuery = `${artistQuery} ${musicKeywords}`;
         
-        const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&from=${dateStr}&sortBy=publishedAt&language=en&apiKey=${API_KEY}`;
+        const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(finalQuery)}&from=${dateStr}&sortBy=relevance&language=en&apiKey=${API_KEY}`;
         
         const response = await axios.get(url);
         const articles = response.data.articles || [];
@@ -23,23 +26,37 @@ app.get('/', async (req, res) => {
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Music News</title>
+            <title>Legends Music News</title>
             <script src="https://cdn.tailwindcss.com"></script>
         </head>
-        <body class="bg-gray-900 text-white font-sans p-4">
-            <div class="max-w-3xl mx-auto">
-                <h1 class="text-3xl font-black text-yellow-500 mb-6 border-b-2 border-yellow-500 pb-2 uppercase italic">Rock Legends 7-Day News</h1>
-                <div class="space-y-6">
+        <body class="bg-zinc-950 text-white font-sans p-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-between items-end mb-8 border-b-4 border-yellow-600 pb-4">
+                    <h1 class="text-4xl font-black uppercase italic tracking-tighter text-yellow-500">Music Legend Tracker</h1>
+                    <span class="text-zinc-500 font-mono text-sm">Last 7 Days</span>
+                </div>
+
+                <div class="grid gap-8">
                     ${articles.length > 0 ? articles.map(a => `
-                        <div class="bg-gray-800 p-5 rounded-lg border border-gray-700 shadow-md">
-                            <h2 class="text-xl font-bold text-white mb-2 leading-tight">${a.title}</h2>
-                            <p class="text-gray-400 text-sm mb-4">${a.description || ''}</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs text-yellow-600 font-mono">${new Date(a.publishedAt).toDateString()}</span>
-                                <a href="${a.url}" target="_blank" class="bg-yellow-600 text-black px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">Read More</a>
+                        <div class="bg-zinc-900 overflow-hidden rounded-xl border border-zinc-800 hover:border-yellow-600 transition-colors shadow-2xl">
+                            <div class="p-6">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="bg-yellow-600 text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">${a.source.name}</span>
+                                    <span class="text-zinc-500 text-xs">${new Date(a.publishedAt).toLocaleDateString()}</span>
+                                </div>
+                                <h2 class="text-2xl font-bold text-white mb-3 leading-tight underline decoration-yellow-900 hover:decoration-yellow-500 cursor-pointer">${a.title}</h2>
+                                <p class="text-zinc-400 text-sm mb-6 line-clamp-3">${a.description || 'No description available for this music update.'}</p>
+                                <a href="${a.url}" target="_blank" class="inline-flex items-center text-yellow-500 font-black text-xs uppercase tracking-widest hover:text-white group">
+                                    Read Music Report 
+                                    <span class="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                                </a>
                             </div>
                         </div>
-                    `).join('') : '<p class="text-center text-gray-500">No news found for the last 7 days.</p>'}
+                    `).join('') : `
+                        <div class="text-center py-20 border-2 border-dashed border-zinc-800 rounded-xl">
+                            <p class="text-zinc-500 text-lg italic">No specific music news found for these artists in the last 7 days.</p>
+                        </div>
+                    `}
                 </div>
             </div>
         </body>
@@ -48,8 +65,8 @@ app.get('/', async (req, res) => {
         res.send(html);
     } catch (err) {
         console.error(err);
-        res.status(500).send("<h1>News source is loading... please refresh in 30 seconds.</h1>");
+        res.status(500).send("<h1>System updating... please refresh in 10 seconds.</h1>");
     }
 });
 
-app.listen(PORT, () => console.log(`App running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Music App Active`));
