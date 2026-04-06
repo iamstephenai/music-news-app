@@ -1,28 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Legends Tracker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-900 text-white p-5">
-    <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-5xl font-black text-yellow-400 mb-4 tracking-tighter">ROCK NEWS LIVE</h1>
-            <p class="text-slate-400">Latest 7 days of updates for your legends</p>
-        </header>
+const express = require('express');
+const axios = require('axios');
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-        <div class="grid gap-6">
-            <% articles.forEach(article => { %>
-                <div class="bg-slate-800 border-l-4 border-yellow-400 p-6 rounded-r-lg shadow-xl">
-                    <span class="text-yellow-500 text-xs font-bold uppercase"><%= new Date(article.publishedAt).toDateString() %></span>
-                    <h2 class="text-2xl font-bold my-2"><%= article.title %></h2>
-                    <p class="text-slate-300 mb-4 text-sm"><%= article.description %></p>
-                    <a href="<%= article.url %>" target="_blank" class="inline-block bg-yellow-500 text-black px-4 py-2 rounded font-bold hover:bg-white transition">READ FULL STORY</a>
-                </div>
-            <% }) %>
-        </div>
-    </div>
-</body>
-</html>
+app.set('view engine', 'ejs');
+
+const ARTISTS = [
+    "Paul McCartney",
+    "Elvis Presley",
+    "Bruce Springsteen",
+    "Burton Cummings",
+    "Neil Sedaka"
+];
+
+app.get('/', async (req, res) => {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const dateString = sevenDaysAgo.toISOString().split('T')[0];
+
+        const query = `("${ARTISTS.join('" OR "')}")`;
+        
+        const response = await axios.get(`https://newsapi.org/v2/everything`, {
+            params: {
+                q: query,
+                from: dateString,
+                sortBy: 'publishedAt',
+                language: 'en',
+                apiKey: 'b1426c01a2e040e091a09d57d0e67570'
+            }
+        });
+
+        res.render('index', { articles: response.data.articles || [], artists: ARTISTS });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error fetching news. Please check your API limits.");
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+})
