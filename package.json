@@ -1,6 +1,8 @@
 {
   "name": "music-news-app",
   "version": "1.0.0",
+  "description": "Music News Tracker",
+  "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
