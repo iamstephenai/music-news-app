@@ -9,7 +9,7 @@ const ARTISTS = [
     "Paul McCartney",
     "Elvis Presley",
     "Bruce Springsteen",
-    "Burton Cummings Guess Who",
+    "Burton Cummings",
     "Neil Sedaka"
 ];
 
@@ -27,17 +27,18 @@ app.get('/', async (req, res) => {
                 from: dateString,
                 sortBy: 'publishedAt',
                 language: 'en',
-                apiKey: 'b1426c01a2e040e091a09d57d0e67570' // YOUR KEY ADDED HERE
+                apiKey: 'b1426c01a2e040e091a09d57d0e67570'
             }
         });
 
-        res.render('index', { articles: response.data.articles, artists: ARTISTS });
+        res.render('index', { articles: response.data.articles || [], artists: ARTISTS });
     } catch (error) {
         console.error(error);
-        res.send("Error fetching news. Please check your API limits.");
+        res.status(500).send("Error fetching news. Please check your API limits.");
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running!`);
+    console.log(`Server is running on port ${PORT}`);
 });
+Click Commit changes at the bottom.
